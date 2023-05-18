@@ -8,6 +8,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Summary;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
@@ -19,8 +22,10 @@ import java.security.cert.X509Certificate;
 import java.util.Properties;
 
 public class EMCClient {
+    private static final Logger logger = LogManager.getLogger(EMCClient.class);
+
     private static String serverIP = "testserver";
-    private static String serverPort = "32236";
+    private static String serverPort = "31352";
     private static String testEndPoint = "https://" + serverIP + ":" + serverPort + "/redfish/v1/Systems";
 
     public static void executeRequest(String url,String token) throws NoSuchAlgorithmException, KeyManagementException, IOException {
@@ -49,17 +54,14 @@ public class EMCClient {
         HttpGet request = new HttpGet(testEndPoint);
         // add request headers
         request.addHeader("Authorization", "Bearer "+ token);
-        request.addHeader(HttpHeaders.USER_AGENT, "Googlebot");
+        request.addHeader(HttpHeaders.USER_AGENT, "PRAIbot");
 
         CloseableHttpResponse response = client.execute(request);
         opaRequestTimer.observeDuration();
 
         int statuscode=response.getStatusLine().getStatusCode();
-        System.out.println("respose code ");
-        System.out.println(statuscode);
+        logger.debug("respose code {}", statuscode);
 
-        //    logger.debug("response status code  ");
-        //  logger.debug(statuscode);
     }
 
 }
