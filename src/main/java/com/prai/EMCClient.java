@@ -28,18 +28,37 @@ public class EMCClient {
     private static String serverPort = "31352";
     private static String testEndPoint = "https://" + serverIP + ":" + serverPort + "/redfish/v1/Systems";
 
-    public static void executeRequest(String url,String token) throws NoSuchAlgorithmException, KeyManagementException, IOException {
+    public static void executeRequest(String url, String token) throws NoSuchAlgorithmException, KeyManagementException, IOException {
+
+//        HttpGet request = new HttpGet("https://www.example.com/");
+        CloseableHttpClient client = getSSLDisableHTTPClient();
+        MyMetrics.startTimer(SettingEnum.OPA);
+        HttpGet request = new HttpGet(testEndPoint);
+        // add request headers
+        request.addHeader("Authorization", "Bearer " + token);
+        request.addHeader(HttpHeaders.USER_AGENT, "PRAIBot");
+        CloseableHttpResponse response = client.execute(request);
+        MyMetrics.stopTimer(SettingEnum.OPA);
+        int statusCode = response.getStatusLine().getStatusCode();
+        logger.debug("respose code {}", statusCode);
+    }
+
+    public static CloseableHttpClient getSSLDisableHTTPClient() throws KeyManagementException, NoSuchAlgorithmException {
         final Properties props = System.getProperties();
         props.setProperty("jdk.internal.httpclient.disableHostnameVerification", Boolean.TRUE.toString());
 
         SSLContext context = SSLContext.getInstance("TLSv1.2");
-        TrustManager[] trustManager = new TrustManager[] {
+        TrustManager[] trustManager = new TrustManager[]{
                 new X509TrustManager() {
                     public X509Certificate[] getAcceptedIssuers() {
                         return new X509Certificate[0];
                     }
-                    public void checkClientTrusted(X509Certificate[] certificate, String str) {}
-                    public void checkServerTrusted(X509Certificate[] certificate, String str) {}
+
+                    public void checkClientTrusted(X509Certificate[] certificate, String str) {
+                    }
+
+                    public void checkServerTrusted(X509Certificate[] certificate, String str) {
+                    }
                 }
         };
         context.init(null, trustManager, new SecureRandom());
@@ -48,20 +67,7 @@ public class EMCClient {
                 SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
 
         CloseableHttpClient client = HttpClientBuilder.create().setSSLSocketFactory(socketFactory).build();
-//        HttpGet request = new HttpGet("https://www.example.com/");
-        Summary.Timer opaRequestTimer =MyMetrics.opaAuthorizationRequestLatency.startTimer();
-
-        HttpGet request = new HttpGet(testEndPoint);
-        // add request headers
-        request.addHeader("Authorization", "Bearer "+ token);
-        request.addHeader(HttpHeaders.USER_AGENT, "PRAIbot");
-
-        CloseableHttpResponse response = client.execute(request);
-        opaRequestTimer.observeDuration();
-
-        int statuscode=response.getStatusLine().getStatusCode();
-        logger.debug("respose code {}", statuscode);
-
+        return client;
     }
 
 }
