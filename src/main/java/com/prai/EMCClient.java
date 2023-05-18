@@ -28,17 +28,17 @@ public class EMCClient {
     private static String serverPort = "31352";
     private static String testEndPoint = "https://" + serverIP + ":" + serverPort + "/redfish/v1/Systems";
 
-    public static void executeRequest(String url, String token) throws NoSuchAlgorithmException, KeyManagementException, IOException {
+    public static void executeRequest(String url, String token,SettingEnum flag) throws NoSuchAlgorithmException, KeyManagementException, IOException {
 
 //        HttpGet request = new HttpGet("https://www.example.com/");
         CloseableHttpClient client = getSSLDisableHTTPClient();
-        MyMetrics.startTimer(SettingEnum.OPA);
+        MyMetrics.startTimer(flag);
         HttpGet request = new HttpGet(testEndPoint);
         // add request headers
         request.addHeader("Authorization", "Bearer " + token);
         request.addHeader(HttpHeaders.USER_AGENT, "PRAIBot");
         CloseableHttpResponse response = client.execute(request);
-        MyMetrics.stopTimer(SettingEnum.OPA);
+        MyMetrics.stopTimer(flag);
         int statusCode = response.getStatusLine().getStatusCode();
         logger.debug("respose code {}", statusCode);
     }
