@@ -88,8 +88,6 @@
       <groupId>com.prai</groupId>
       <artifactId>jarl-api</artifactId>
       <version>0.1.0-SNAPSHOT</version>
-      <scope>system</scope>
-      <systemPath>/repo/jarl/api/build/libs/jarl-api-0.1.0-SNAPSHOT.jar</systemPath>
     </dependency>
   </dependencies>
   <build>
@@ -171,6 +169,29 @@
         </executions>
       </plugin>
 
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-install-plugin</artifactId>
+        <version>3.0.1</version>
+        <executions>
+          <execution>
+            <id>your-file</id>
+            <inherited>false</inherited>
+            <phase>validate</phase>
+            <configuration>
+              <file>/repo/jarl/api/build/libs/jarl-api-0.1.0-SNAPSHOT.jar</file>
+              <groupId>com.prai</groupId>
+              <artifactId>jarl-api</artifactId>
+              <version>0.1.0-SNAPSHOT</version>
+              <packaging>jar</packaging>
+              <generatePom>true</generatePom>
+            </configuration>
+            <goals>
+              <goal>install-file</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
 
     </plugins>
   </build>

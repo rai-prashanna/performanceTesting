@@ -6,4 +6,8 @@ does curl like operations to TLS protected REST API endpoint
 
 ## do batch testing 
 * for i in {1..500};do getAccessToken AllAdmin;java -jar /repo/performanceTesting/performanceTesting/target/performanceTesting.jar $TOKEN;done
+* getAccessToken AllAdmin;java -jar /repo/performanceTesting/performanceTesting/target/performanceTesting.jar $TOKEN OPA
 
+export -f function curl_cmd() {
+kubectl exec -i eric-sec-access-mgmt-0 -c iam -- curl "$@" || kubectl exec -i eric-sec-access-mgmt-1 -c iam -- curl "$@"
+}
