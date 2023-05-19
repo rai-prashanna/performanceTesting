@@ -72,7 +72,25 @@
       <artifactId>client-java</artifactId>
       <version>18.0.0</version>
     </dependency>
-
+    <dependency>
+      <groupId>com.prai</groupId>
+      <artifactId>jarl-standalone</artifactId>
+      <version>0.1.0-SNAPSHOT</version>
+      <scope>system</scope>
+      <systemPath>/repo/jarl/core/target/jarl-0.1.0-SNAPSHOT-standalone.jar</systemPath>
+    </dependency>
+    <dependency>
+      <groupId>com.prai</groupId>
+      <artifactId>jarl-core</artifactId>
+      <version>0.1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.prai</groupId>
+      <artifactId>jarl-api</artifactId>
+      <version>0.1.0-SNAPSHOT</version>
+      <scope>system</scope>
+      <systemPath>/repo/jarl/api/build/libs/jarl-api-0.1.0-SNAPSHOT.jar</systemPath>
+    </dependency>
   </dependencies>
   <build>
     <finalName>performanceTesting</finalName>
@@ -101,7 +119,7 @@
           <archive>
             <manifest>
               <!-- Jar file entry point -->
-              <mainClass>com.prai.App</mainClass>
+              <mainClass>com.prai.App2</mainClass>
               <addClasspath>true</addClasspath>
               <classpathPrefix>dependency-jars/</classpathPrefix>
             </manifest>
@@ -126,6 +144,29 @@
               <includeScope>runtime</includeScope>
               <outputDirectory>${project.build.directory}/dependency-jars/</outputDirectory>
             </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-install-plugin</artifactId>
+        <version>3.0.1</version>
+        <executions>
+          <execution>
+            <id>your-file</id>
+            <inherited>false</inherited>
+            <phase>validate</phase>
+            <configuration>
+              <file>/repo/jarl/core/target/jarl-0.1.0-SNAPSHOT.jar</file>
+              <groupId>com.prai</groupId>
+              <artifactId>jarl-core</artifactId>
+              <version>0.1.0-SNAPSHOT</version>
+              <packaging>jar</packaging>
+              <generatePom>true</generatePom>
+            </configuration>
+            <goals>
+              <goal>install-file</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>
