@@ -1,12 +1,19 @@
 package com.prai;
 
 import by.borge.jarl.Jarl;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class OPADecisionMaker {
+    private static final Logger logger = LogManager.getLogger(OPADecisionMaker.class);
+
     private static String serverIP= "testserver";
     private static String serverPort= "32323";
     private static String coarsegrainedendpoint = "http://"+serverIP+":"+serverPort+"/v1/data/authz/redfish/v1/policy";
@@ -16,10 +23,15 @@ public class OPADecisionMaker {
     private static String coarsedGrainedentrypoint= "authz/redfish/v1/policy/allow";
     private static String fineGrainedIRFile= "/repo/policy/optimizedPlans/fine-grained-policies-plan.json";
     private static String fineGrainedIRFileentrypoint="authz/redfish/v1/fine/policy/batch_allow";
-    public static boolean isAllowedJarl(String uri, String method, List<String> roles) {
-        var file = new File(coarsedGrainedIRFile);
-        boolean decision = false;
+    public static boolean isAllowedJarl(String uri, String method, List<String> roles) throws URISyntaxException, IOException {
+        Utility app =new Utility();
+        String fileName = "coarse-grained-policies-plan.json";
+        URI fileURI = app.getPathsFromResourceJAR(fileName);
+        System.out.println("The value of uri");
+        System.out.println(fileURI);
+        File file = new File(coarsedGrainedIRFile);
 
+        boolean decision = false;
         Map<String, ?> data = Map.of();
         Map<String,Object> map = new HashMap<>();
         map.put("roles", roles);
@@ -28,8 +40,10 @@ public class OPADecisionMaker {
 
         try {
             decision= Jarl.builder(file).build().getPlan(coarsedGrainedentrypoint).eval(map, data).allowed();
+            logger.debug("the decision ...{}",decision);
+
         } catch (IOException e) {
-            System.out.println( "Exception while making decision by Jarl library " +e.getStackTrace() );
+            System.out.println( "Exception while making decision by Jarl library " +e.toString() );
         }
         finally{
             return decision;

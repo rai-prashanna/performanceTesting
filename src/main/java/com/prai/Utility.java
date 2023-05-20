@@ -28,46 +28,6 @@ public class Utility {
         printFile(file);
         System.out.println("************* : ");
 
-        // Sample 2 - Read all files from a resources folder (Not working in JAR)
-        /*try {
-
-            // src/main/resources/json
-            List<File> result = app.getAllFilesFromResource("json");
-            for (File file : result) {
-                System.out.println("file : " + file);
-                printFile(file);
-            }
-
-        } catch (URISyntaxException | IOException e) {
-            e.printStackTrace();
-        }*/
-
-        // Sample 3 - read all files from a resources folder (JAR version)
-        /*try {
-
-            // get filename from src/main/resources/json
-            List<Path> result = app.getPathsFromResourceJAR("json");
-            for (Path path : result) {
-                System.out.println("Path : " + path);
-
-                String filePathInJAR = path.toString();
-                // Windows will returns /json/file1.json, cut the first /
-                // the correct path should be json/file1.json
-                if (filePathInJAR.startsWith("/")) {
-                    filePathInJAR = filePathInJAR.substring(1);
-                }
-
-                System.out.println("filePathInJAR : " + filePathInJAR);
-
-                // read a file from resource folder
-                InputStream is = app.getFileFromResourceAsStream(filePathInJAR);
-                printInputStream(is);
-            }
-
-        } catch (URISyntaxException | IOException e) {
-            e.printStackTrace();
-        }*/
-
     }
 
     public static InputStream getFileFromResourceFolder(String fileName) {
@@ -123,13 +83,13 @@ public class Utility {
             // failed if files have whitespaces or special characters
             //return new File(resource.getFile());
 
-            return new File(resource.toURI());
+            return new File(resource.toExternalForm());
         }
 
     }
 
     // Get all paths from a folder that inside the JAR file
-    public List<Path> getPathsFromResourceJAR(String folder) throws URISyntaxException, IOException {
+    public URI getPathsFromResourceJAR(String folder) throws URISyntaxException, IOException {
 
         List<Path> result;
 
@@ -144,12 +104,13 @@ public class Utility {
         // file walks JAR
         URI uri = URI.create("jar:file:" + jarPath);
         try (FileSystem fs = FileSystems.newFileSystem(uri, Collections.emptyMap())) {
-            result = Files.walk(fs.getPath(folder))
-                    .filter(Files::isRegularFile)
-                    .collect(Collectors.toList());
+    var temp=Files.walk(fs.getPath(folder));
+System.out.println("the value of faoler is ");
+System.out.println(temp);
         }
 
-        return result;
+
+        return uri;
 
     }
 

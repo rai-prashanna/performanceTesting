@@ -20,12 +20,13 @@ public class App
 
     public static void main( String[] args )
     {
-
+        EMCClient.init(args[0]);
         logger.debug("Web server for Prometheus client exporter started..");
         try {
+  //ARGS[0] -> nodePortServiceIP, ARGS[1] -> TOKEN, ARGS[2] -> SETTINGS
             HTTPServer server = new HTTPServer("localhost",9081);
             for (int i = 0; i < 8000; i++) {
-                EMCClient.executeRequest("",args[0],SettingEnum.valueOf(args[1]));
+                EMCClient.executeRequest("",args[1],SettingEnum.valueOf(args[2]));
             }
             server.close();
         } catch (NoSuchAlgorithmException e) {

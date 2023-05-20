@@ -22,14 +22,13 @@ public class App1
 {
     private static final Logger logger = LogManager.getLogger(App1.class);
 
-    public static void main( String[] args )
-    {
+    public static void main( String[] args ) throws URISyntaxException, IOException {
         Utility app =new Utility();
         String fileName = "coarse-grained-policies-plan.json";
 
         System.out.println("getResourceAsStream : " + fileName);
         InputStream is = app.getFileFromResourceAsStream(fileName);
-        Utility.printInputStream(is);
+
 
         System.out.println("\ngetResource : " + fileName);
         File file = null;
@@ -65,7 +64,6 @@ public class App1
         logger.debug("*****END*****************");
 
 //        System.out.println( "The value of decision from Jarl " );   ((JSONObject) ((JSONArray) test).get(0)).get("result")
-
 
     }
 }

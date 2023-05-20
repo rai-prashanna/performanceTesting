@@ -20,16 +20,19 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.Properties;
+import io.prometheus.client.hotspot.DefaultExports;
 
 public class EMCClient {
     private static final Logger logger = LogManager.getLogger(EMCClient.class);
 
     private static String serverIP = "testserver";
-    private static String serverPort = "31352";
-    private static String testEndPoint = "https://" + serverIP + ":" + serverPort + "/redfish/v1/Systems";
+    private static String serverPort = "30161";
+    private static String testEndPoint = "";
 
+    public static void init(String nodePortServiceIP){
+        testEndPoint = "https://" + serverIP + ":" + nodePortServiceIP + "/redfish/v1/Systems";
+    }
     public static void executeRequest(String url, String token,SettingEnum flag) throws NoSuchAlgorithmException, KeyManagementException, IOException {
-
 //        HttpGet request = new HttpGet("https://www.example.com/");
         CloseableHttpClient client = getSSLDisableHTTPClient();
         MyMetrics.startTimer(flag);
