@@ -88,10 +88,25 @@
       <version>0.1.0-SNAPSHOT</version>
     </dependency>
     <dependency>
-      <groupId>io.micrometer</groupId>
-      <artifactId>micrometer-registry-prometheus</artifactId>
-      <version>1.11.0</version>
+      <groupId>io.github.sangkeon</groupId>
+      <artifactId>java-opa-wasm</artifactId>
+      <version>0.2.3_glibc2.31</version>
     </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.14.2</version>
+    </dependency>
+    <dependency>
+      <groupId>javax.annotation</groupId>
+      <artifactId>javax.annotation-api</artifactId>
+      <version>1.3.2</version>
+    </dependency>
+<!--    <dependency>-->
+<!--      <groupId>io.github.kawamuray.wasmtime</groupId>-->
+<!--      <artifactId>wasmtime-java</artifactId>-->
+<!--      <version>0.14.0</version>-->
+<!--    </dependency>-->
   </dependencies>
   <build>
     <finalName>performanceTesting</finalName>

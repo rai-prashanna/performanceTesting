@@ -11,3 +11,5 @@ does curl like operations to TLS protected REST API endpoint
 export -f function curl_cmd() {
 kubectl exec -i eric-sec-access-mgmt-0 -c iam -- curl "$@" || kubectl exec -i eric-sec-access-mgmt-1 -c iam -- curl "$@"
 }
+
+getAccessToken AllAdmin;java -jar target/performanceTesting.jar 30754 $TOKEN "JARL" 2

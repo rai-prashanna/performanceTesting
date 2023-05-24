@@ -21,14 +21,19 @@ public class App
     public static void main( String[] args )
     {
         EMCClient.init(args[0]);
+        int loops= Integer.parseInt(args[3]);
         logger.debug("Web server for Prometheus client exporter started..");
         try {
-  //ARGS[0] -> nodePortServiceIP, ARGS[1] -> TOKEN, ARGS[2] -> SETTINGS
-            HTTPServer server = new HTTPServer("localhost",9081);
-            for (int i = 0; i < 8000; i++) {
+  //ARGS[0] -> nodePortServiceIP,
+  // ARGS[1] -> TOKEN,
+  // ARGS[2] -> SETTINGS (like OPA,JARL, PermissionHandler)
+  // ARGS[3] -> numberOfLoops
+  // ARGS[4] -> exporterPort
+            //HTTPServer server = new HTTPServer("localhost",Integer.valueOf(args[4]));
+            for (int i = 0; i < loops; i++) {
                 EMCClient.executeRequest("",args[1],SettingEnum.valueOf(args[2]));
             }
-            server.close();
+          //  server.close();
         } catch (NoSuchAlgorithmException e) {
             logger.debug("NoSuchAlgorithmException {}", e.getMessage());
         } catch (KeyManagementException e) {
