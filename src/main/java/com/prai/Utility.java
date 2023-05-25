@@ -19,9 +19,6 @@ public class Utility {
         //String fileName = "database.properties";
         String fileName = "coarse-grained-policies-plan.json";
 
-        System.out.println("getResourceAsStream : " + fileName);
-        InputStream is = app.getFileFromResourceAsStream(fileName);
-        printInputStream(is);
 
         System.out.println("\ngetResource : " + fileName);
         File file = app.getFileFromResource(fileName);

@@ -6,11 +6,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import io.prometheus.client.Counter;
-import io.prometheus.client.Summary;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
@@ -20,8 +17,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.Properties;
-import io.prometheus.client.hotspot.DefaultExports;
-
+import com.prai.metrics.MyMetrics;
+import com.prai.metrics.SettingEnum;
 public class EMCClient {
     private static final Logger logger = LogManager.getLogger(EMCClient.class);
 
@@ -35,13 +32,13 @@ public class EMCClient {
     public static void executeRequest(String url, String token,SettingEnum flag) throws NoSuchAlgorithmException, KeyManagementException, IOException {
 //        HttpGet request = new HttpGet("https://www.example.com/");
         CloseableHttpClient client = getSSLDisableHTTPClient();
-        MyMetrics.startTimer(flag);
+        MyMetrics.startAuthzDecisionTimer(flag);
         HttpGet request = new HttpGet(testEndPoint);
         // add request headers
         request.addHeader("Authorization", "Bearer " + token);
         request.addHeader(HttpHeaders.USER_AGENT, "PRAIBot");
         CloseableHttpResponse response = client.execute(request);
-        MyMetrics.stopTimer(flag);
+        MyMetrics.stopAuthzDecisionTimer(flag);
         int statusCode = response.getStatusLine().getStatusCode();
         logger.debug("respose code {}", statusCode);
     }

@@ -135,7 +135,7 @@
           <archive>
             <manifest>
               <!-- Jar file entry point -->
-              <mainClass>com.prai.App</mainClass>
+              <mainClass>com.prai.LocalApp</mainClass>
               <addClasspath>true</addClasspath>
               <classpathPrefix>dependency-jars/</classpathPrefix>
             </manifest>

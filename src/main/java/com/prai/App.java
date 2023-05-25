@@ -1,13 +1,11 @@
 package com.prai;
 
+import com.prai.metrics.SettingEnum;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Properties;
-import io.prometheus.client.exporter.HTTPServer;
-import io.prometheus.client.hotspot.DefaultExports;
 
 /**
  * Hello world!
@@ -31,7 +29,7 @@ public class App
   // ARGS[4] -> exporterPort
             //HTTPServer server = new HTTPServer("localhost",Integer.valueOf(args[4]));
             for (int i = 0; i < loops; i++) {
-                EMCClient.executeRequest("",args[1],SettingEnum.valueOf(args[2]));
+                EMCClient.executeRequest("",args[1], SettingEnum.valueOf(args[2]));
             }
           //  server.close();
         } catch (NoSuchAlgorithmException e) {

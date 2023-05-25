@@ -11,65 +11,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 public class FileResourcesUtils {
 
-    public static void main(String[] args) throws IOException, URISyntaxException {
-
-        FileResourcesUtils app = new FileResourcesUtils();
-
-        // Sample 1 - read a file
-        //String fileName = "database.properties";
-        String fileName = "coarse-grained-policies-plan.json";
-
-        System.out.println("getResourceAsStream : " + fileName);
-        InputStream is = app.getFileFromResourceAsStream(fileName);
-        printInputStream(is);
-
-        System.out.println("\ngetResource : " + fileName);
-        File file = app.getFileFromResource(fileName);
-        printFile(file);
-        System.out.println("************* : ");
-
-        // Sample 2 - Read all files from a resources folder (Not working in JAR)
-        /*try {
-
-            // src/main/resources/json
-            List<File> result = app.getAllFilesFromResource("json");
-            for (File file : result) {
-                System.out.println("file : " + file);
-                printFile(file);
-            }
-
-        } catch (URISyntaxException | IOException e) {
-            e.printStackTrace();
-        }*/
-
-        // Sample 3 - read all files from a resources folder (JAR version)
-        /*try {
-
-            // get filename from src/main/resources/json
-            List<Path> result = app.getPathsFromResourceJAR("json");
-            for (Path path : result) {
-                System.out.println("Path : " + path);
-
-                String filePathInJAR = path.toString();
-                // Windows will returns /json/file1.json, cut the first /
-                // the correct path should be json/file1.json
-                if (filePathInJAR.startsWith("/")) {
-                    filePathInJAR = filePathInJAR.substring(1);
-                }
-
-                System.out.println("filePathInJAR : " + filePathInJAR);
-
-                // read a file from resource folder
-                InputStream is = app.getFileFromResourceAsStream(filePathInJAR);
-                printInputStream(is);
-            }
-
-        } catch (URISyntaxException | IOException e) {
-            e.printStackTrace();
-        }*/
-
-    }
-
     public static InputStream getFileFromResourceFolder(String fileName) {
 
         // for static access
