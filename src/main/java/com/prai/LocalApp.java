@@ -1,5 +1,6 @@
 package com.prai;
 
+import com.prai.authorization.PermissionHandler;
 import com.prai.metrics.MyMetrics;
 import com.prai.metrics.SettingEnum;
 import com.prai.opa.OPADecisionMaker;
@@ -30,28 +31,9 @@ public class LocalApp {
         String method = "GET";
         List<String> roles = Arrays.asList("OmcSecurityAdministrator", "default-roles-omc", "DeleteJob", "OmcEquipmentAdministrator", "offline_access", "OmcEquipmentObserver", "OmcSystemAdministrator", "uma_authorization", "CreateJob", "OmcSystemObserver");
         OPADecisionMaker.init();
-        prometheusServer = new HTTPServer(port);
+        PermissionHandler.getInstance();
 
-        for (int i = 0; i < loops; i++) {
-            if(setting==SettingEnum.JARL){
-                MyMetrics.startAuthzDecisionTimer(SettingEnum.JARL);
-                boolean wasmdecision=OPADecisionMaker.isAllowedWASM(uri, method, roles);
-                MyMetrics.stopAuthzDecisionTimer(SettingEnum.JARL);
-            }
-            if(setting==SettingEnum.OPA){
-                MyMetrics.startAuthzDecisionTimer(SettingEnum.OPA);
-                boolean opadecision=OPADecisionMaker.isAllowed(uri, method, roles);
-                MyMetrics.stopAuthzDecisionTimer(SettingEnum.OPA);
-            }
-            if(setting==SettingEnum.WASM){
-                MyMetrics.startAuthzDecisionTimer(SettingEnum.WASM);
-                boolean wasmdecision=OPADecisionMaker.isAllowedWASM(uri, method, roles);
-                MyMetrics.stopAuthzDecisionTimer(SettingEnum.WASM);
-            }
-            logger.debug("Iteration : {}", i);
-        }
-
-        prometheusServer.close();
+        String uri1="/redfish/v1/Chassis";
 //        List<String> nextroles = Arrays.asList("CreateJob",
 //                "DeleteJob",
 //                "OmcEquipmentAdministrator");
@@ -60,6 +42,43 @@ public class LocalApp {
 //                "/TaskService/Tasks/3/",
 //                "Chassis");
 //        List<String> methods = Arrays.asList("GET", "GET", "GET", "GET");
+//        OPADecisionMaker.getInstance().isAllowedOPA(uri,method,
+//                roles);
+//        OPADecisionMaker.getInstance().isAllowedJarl(uri,method,
+//                roles);
+//     OPADecisionMaker.getInstance().isAllowedJarl(uris,methods,
+//                nextroles);
+        prometheusServer = new HTTPServer(port);
+        for (int i = 0; i < loops; i++) {
+            if(setting==SettingEnum.JARL){
+                MyMetrics.startAuthzDecisionTimer(SettingEnum.JARL);
+                boolean wasmdecision=OPADecisionMaker.getInstance().isAllowedJarl(uri, method, roles);
+                MyMetrics.stopAuthzDecisionTimer(SettingEnum.JARL);
+            }
+            if(setting==SettingEnum.OPA){
+                MyMetrics.startAuthzDecisionTimer(SettingEnum.OPA);
+                boolean opadecision=OPADecisionMaker.getInstance().isAllowedOPA(uri, method, roles);
+                MyMetrics.stopAuthzDecisionTimer(SettingEnum.OPA);
+            }
+            if(setting==SettingEnum.WASM){
+                MyMetrics.startAuthzDecisionTimer(SettingEnum.WASM);
+                boolean wasmdecision=OPADecisionMaker.getInstance().isAllowedWASM(uri, method, roles);
+                MyMetrics.stopAuthzDecisionTimer(SettingEnum.WASM);
+            }
+            if(setting==SettingEnum.PH){
+                MyMetrics.startAuthzDecisionTimer(SettingEnum.PH);
+                boolean phdecision=PermissionHandler.getInstance().isAllowed(roles, method, uri1);
+                MyMetrics.stopAuthzDecisionTimer(SettingEnum.PH);
+            }
+            logger.debug("Iteration : {}", i);
+        }
+        prometheusServer.close();
+
+//        String uri1="Chassis";
+//        String method1 = "GET";
+//        List<String> roles1=Arrays.asList("OmcEquipmentAdministrator");
+//        boolean localDecision= OPADecisionMaker.isAllowedWASM(uri1,method1,roles1);
+
 //        List<String> allowedUris = OPADecisionMaker.isAllowedWASM(uris, methods, nextroles);
 //        System.out.println("******************************************");
 

@@ -55,7 +55,7 @@ public class MyMetrics {
         if (flag == SettingEnum.OPA) {
             startOPARequestResponseTimer();
         }
-        if (flag == SettingEnum.PERMISSIONHANDLER) {
+        if (flag == SettingEnum.PH) {
             startPermissionHandlerRequestResponseTimer();
         }
         if (flag == SettingEnum.JARL) {
@@ -71,7 +71,7 @@ public class MyMetrics {
         if (flag == SettingEnum.OPA) {
             startOPAAuthzTimer();
         }
-        if (flag == SettingEnum.PERMISSIONHANDLER) {
+        if (flag == SettingEnum.PH) {
             startPermissionHandlerAuthzTimer();
         }
         if (flag == SettingEnum.JARL) {
@@ -102,7 +102,7 @@ public class MyMetrics {
         if (flag == SettingEnum.OPA) {
             stopOPAAuthzTimer();
         }
-        if (flag == SettingEnum.PERMISSIONHANDLER) {
+        if (flag == SettingEnum.PH) {
             stopPermissionHandlerAuthzTimer();
         }
         if (flag == SettingEnum.JARL) {
@@ -132,7 +132,7 @@ public class MyMetrics {
         if (flag == SettingEnum.OPA) {
             stopOPARequestResponseTimer();
         }
-        if (flag == SettingEnum.PERMISSIONHANDLER) {
+        if (flag == SettingEnum.PH) {
             stopPermissionHandlerRequestResponseTimer();
         }
         if (flag == SettingEnum.JARL) {

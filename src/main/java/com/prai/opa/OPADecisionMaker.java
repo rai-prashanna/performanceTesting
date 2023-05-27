@@ -4,6 +4,7 @@ import by.borge.jarl.Jarl;
 import by.borge.jarl.Plan;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.prai.authorization.PermissionHandler;
 import io.github.sangkeon.opa.wasm.Bundle;
 import io.github.sangkeon.opa.wasm.BundleUtil;
 import io.github.sangkeon.opa.wasm.OPAModule;
@@ -23,42 +24,164 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class OPADecisionMaker {
-    private static final String serverIP = "testserver";
-    private static final String serverPort = "32323";
-    private static final String coarsegrainedendpoint = "http://" + serverIP + ":" + serverPort + "/v1/data/authz/redfish/v1/policy";
-    private static final String finegrainedendpoint = "http://" + serverIP + ":" + serverPort + "/v1/data/authz/redfish/v1/fine/policy";
-    private static final String entrypoint = "authz/redfish/v1/policy/allow";
-    private static final String entrypoint2 = "authz/redfish/v1/fine/policy/batch_allow";
+    private final String serverIP = "localhost";
+    private final String serverPort = "8181";
+    private final String coarsegrainedendpoint = "http://" + serverIP + ":" + serverPort + "/v1/data/authz/redfish/v1/policy";
+    private final String finegrainedendpoint = "http://" + serverIP + ":" + serverPort + "/v1/data/authz/redfish/v1/fine/policy";
     private static final Logger logger = LogManager.getLogger(OPADecisionMaker.class);
-    private static String coarsedGrainedIRFile = "/repo/performanceTesting/performanceTesting/src/main/resources/coarse-grained-policies-plan.json";
-    private static String fineGrainedIRFile = "/repo/performanceTesting/performanceTesting/src/main/resources/fine-grained-policies-plan.json";
-    private static String coarsedGrainedWASMFile = "/repo/performanceTesting/performanceTesting/src/main/resources/coarsed-bundle.tar.gz";
-    private static String fineGrainedWASMFile = "/repo/performanceTesting/performanceTesting/src/main/resources/finebundle.tar.gz";
-    private static String coarsedGrainedentrypoint = "authz/redfish/v1/policy/allow";
-    private static String fineGrainedentrypoint = "authz/redfish/v1/fine/policy/batch_allow";
-
-    private static Plan coarsedGraindePlan;
+    private final String coarsedGrainedentrypoint = "authz/redfish/v1/policy/allow";
+    private final String fineGrainedentrypoint = "authz/redfish/v1/fine/policy/batch_allow";
+    private Plan coarsedGraindePlan;
     private static Plan fineGraindePlan;
-    private static Bundle coarsedGrainedWASMBundle;
+    private Bundle coarsedGrainedWASMBundle;
 
-    private static Bundle fineGrainedWASMBundle;
+    private Bundle fineGrainedWASMBundle;
 
-    private static  OPAModule coarsedGrainedWASMModule;
-    private static  OPAModule fineGrainedWASMModule;
+    private OPAModule coarsedGrainedWASMModule;
+    private OPAModule fineGrainedWASMModule;
+    private HashMap<String,?> data;
+    private static OPADecisionMaker instance=null;
+    private HttpClient httpClient;
+
+    private ObjectMapper objectMapper;
+
+    private SingleOPAInput singleInput;
+    private OPAInput1 bulkInput;
+    private BulkOPARequest1 bulkOPARequest;
+    private SingleOPARequest singleOPARequest;
+
+    public OPADecisionMaker(){
+
+    }
+    public static OPADecisionMaker getInstance(){
+        if (instance == null) {
+            instance = new OPADecisionMaker();
+        }
+        return instance;
+    }
     public static void init() throws IOException {
-        var coarsedGrainedfile = new File(coarsedGrainedIRFile);
-        coarsedGraindePlan=  Jarl.builder(coarsedGrainedfile).build().getPlan(coarsedGrainedentrypoint);
-        var fineGrainedfile = new File(fineGrainedIRFile);
-        fineGraindePlan= Jarl.builder(fineGrainedfile).build().getPlan(fineGrainedentrypoint);
-        coarsedGrainedWASMBundle = BundleUtil.extractBundle(coarsedGrainedWASMFile);
-        fineGrainedWASMBundle=  BundleUtil.extractBundle(fineGrainedWASMFile);
+
+        OPADecisionMaker.getInstance().initOPARESTMode();
+        OPADecisionMaker.getInstance().initWASMMode();
+        OPADecisionMaker.getInstance().initJARLMode();
+    }
+    private void initJARLMode(){
+        String coarsedGrainedIRFilePath = "/repo/policy/optimizedPlans/coarse-grained-policies-plan.json";
+        String fineGrainedIRFilePath = "/repo/policy/optimizedPlans/fine-grained-policies-plan.json";
+        var coarsedGrainedfile = new File(coarsedGrainedIRFilePath);
+        try {
+            coarsedGraindePlan=  Jarl.builder(coarsedGrainedfile).build().getPlan(coarsedGrainedentrypoint);
+        } catch (IOException e) {
+            logger.info("OPADecisionMaker Exception while creating coarsedGraindePlan..... {}", e);
+        }
+        var fineGrainedfile = new File(fineGrainedIRFilePath);
+        try {
+            fineGraindePlan= Jarl.builder(fineGrainedfile).build().getPlan(fineGrainedentrypoint);
+        } catch (IOException e) {
+            logger.info("OPADecisionMaker Exception while creating fineGraindePlan..... {}", e);
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            data =mapper.readValue(new File("/repo/policy/unoptimizedPlans/data.json"),HashMap.class);
+        } catch (IOException e) {
+            logger.info("OPADecisionMaker Exception while reading data.json ..... {}", e);
+        }
+    }
+    private void initWASMMode(){
+      String coarsedGrainedWASMPath = "/repo/policy/unoptimizedWASM/coarsed-bundle.tar.gz";
+       String fineGrainedWASMPath = "/repo/policy/unoptimizedWASM/finebundle.tar.gz";
+        try {
+            coarsedGrainedWASMBundle = BundleUtil.extractBundle(coarsedGrainedWASMPath);
+        } catch (IOException e) {
+            logger.info("OPADecisionMaker Exception while using Bundle  ..... {}", e);
+        }
+        try {
+            fineGrainedWASMBundle=  BundleUtil.extractBundle(fineGrainedWASMPath);
+        } catch (IOException e) {
+            logger.info("OPADecisionMaker Exception while using Bundle  ..... {}", e);
+        }
         coarsedGrainedWASMModule = new OPAModule(coarsedGrainedWASMBundle);
         fineGrainedWASMModule= new OPAModule(fineGrainedWASMBundle);
     }
-    public static boolean isAllowedJarl(String uri, String method, List<String> roles) {
-        boolean decision = false;
+    private void initOPARESTMode(){
+        httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
+                .connectTimeout(Duration.ofSeconds(10))
+                .build();
+        objectMapper = new ObjectMapper();
+        singleInput = new SingleOPAInput();
+        bulkInput= new OPAInput1();
+        bulkOPARequest= new BulkOPARequest1();
+        singleOPARequest= new SingleOPARequest();
+    }
+    public List<String> isAllowedOPA(List<String> uris, List<String> methods, List<String> roles) {
+        List<String> allowedUris = Collections.EMPTY_LIST;
+        bulkInput.setMethods(methods);
+        bulkInput.setRoles(roles);
+        bulkInput.setResources(uris);
+        bulkOPARequest.setInput(bulkInput);
+        BulkOPAResponse response;
+        try {
+            String inputJson = objectMapper.writeValueAsString(bulkOPARequest);
 
-        Map<String, ?> data = Map.of();
+            //      LOGGER.info("OPADecisionMaker BulkInputJSON created .....{}", inputJson);
+
+            HttpRequest httpRequest = HttpRequest.newBuilder()
+                    .POST(HttpRequest.BodyPublishers.ofString(inputJson))
+                    .uri(URI.create(finegrainedendpoint))
+                    .setHeader("User-Agent", "PRASHANNA")
+                    .build();
+
+            HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            response = objectMapper.readValue(httpResponse.body(), BulkOPAResponse.class);
+            allowedUris = response.getResult().getBatchAllow();
+            //       LOGGER.info("OPADecisionMaker Bulk Value of allow .....{}", allowedUris);
+        } catch (JsonProcessingException e) {
+            logger.error("OPADecisionMaker Exception while processing Json  .....{}", e.toString());
+        } catch (IOException e) {
+            logger.error("OPADecisionMaker Exception while IO operations  .....{}", e.toString());
+        } catch (InterruptedException e) {
+            logger.error("OPADecisionMaker InterruptedException operations  .....{}", e.toString());
+        } finally {
+            return allowedUris;
+        }
+    }
+    public boolean isAllowedOPA(String uri, String method, List<String> roles) {
+        boolean opaDecision = false;
+        singleInput.setResource(uri);
+        singleInput.setMethod(method);
+        singleInput.setRoles(roles);
+        singleOPARequest.setInput(singleInput);
+        SingleOPAResponse response;
+        try {
+            String inputJson = objectMapper.writeValueAsString(singleOPARequest);
+            //    LOGGER.info("OPADecisionMaker InputJSON created .....{}", inputJson);
+            HttpRequest httpRequest = HttpRequest.newBuilder()
+                    .POST(HttpRequest.BodyPublishers.ofString(inputJson))
+                    .uri(URI.create(coarsegrainedendpoint))
+                    .setHeader("User-Agent", "PRASHANNA")
+                    .build();
+            HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+            response = objectMapper.readValue(httpResponse.body(), SingleOPAResponse.class);
+            //      LOGGER.info("OPADecisionMaker httpResponse Body....{}", httpResponse.body());
+            opaDecision = response.getResult().isAllow();
+            //       LOGGER.info("OPADecisionMaker Value of allow....{}", opaDecision);
+        } catch (JsonProcessingException e) {
+            logger.info("OPADecisionMaker JsonProcessingException ....{}", e.toString());
+        } catch (IOException e) {
+            logger.info("OPADecisionMaker IOException ....{}", e.toString());
+        } catch (InterruptedException e) {
+            logger.info("OPADecisionMaker InterruptedException ....{}", e.toString());
+        } finally {
+            return opaDecision;
+        }
+    }
+
+
+
+    public boolean isAllowedJarl(String uri, String method, List<String> roles) {
+        boolean decision = false;
         Map<String, Object> map = new HashMap<>();
         map.put("roles", roles);
         map.put("method", method);
@@ -73,11 +196,8 @@ public class OPADecisionMaker {
     }
 
 
-    public static List<String> isAllowedJarl(List<String> uris, List<String> methods, List<String> roles) {
-        //  String IRFile2= "/repo/policy/optimizedPlans/fine-grained-policies-plan.json";
-
+    public List<String> isAllowedJarl(List<String> uris, List<String> methods, List<String> roles) {
         List<String> allowedUrls = Collections.EMPTY_LIST;
-        Map<String, ?> data = Map.of();
         Map<String, Object> map = new HashMap<>();
         map.put("roles", roles);
         map.put("methods", methods);
@@ -92,91 +212,7 @@ public class OPADecisionMaker {
         }
     }
 
-    public static boolean isAllowed(String uri, String method, List<String> roles) {
-        boolean opaDecision = false;
-        ObjectMapper objectMapper = new ObjectMapper();
-        SingleOPAInput input = new SingleOPAInput();
-        input.setResource(uri);
-        input.setMethod(method);
-        input.setRoles(roles);
-        SingleOPARequest opaRequest = new SingleOPARequest(input);
-        HttpClient httpClient = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_1_1)
-                .connectTimeout(Duration.ofSeconds(10))
-                .build();
-        SingleOPAResponse response;
-        try {
-            String inputJson = objectMapper.writeValueAsString(opaRequest);
-
-        //    LOGGER.info("OPADecisionMaker InputJSON created .....{}", inputJson);
-
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .POST(HttpRequest.BodyPublishers.ofString(inputJson))
-                    .uri(URI.create(coarsegrainedendpoint))
-                    .setHeader("User-Agent", "PRASHANNA")
-                    .build();
-
-            HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-
-            response = objectMapper.readValue(httpResponse.body(), SingleOPAResponse.class);
-
-      //      LOGGER.info("OPADecisionMaker httpResponse Body....{}", httpResponse.body());
-
-            opaDecision = response.getResult().isAllow();
-     //       LOGGER.info("OPADecisionMaker Value of allow....{}", opaDecision);
-            return response.getResult().isAllow();
-        } catch (JsonProcessingException e) {
-            logger.info("OPADecisionMaker JsonProcessingException ....{}", e.toString());
-        } catch (IOException e) {
-            logger.info("OPADecisionMaker IOException ....{}", e.toString());
-        } catch (InterruptedException e) {
-            logger.info("OPADecisionMaker InterruptedException ....{}", e.toString());
-        } finally {
-            return opaDecision;
-        }
-    }
-
-    public static List<String> isAllowed(List<String> uris, List<String> methods, List<String> roles) {
-        List<String> allowedUris = Collections.EMPTY_LIST;
-        ObjectMapper objectMapper = new ObjectMapper();
-        OPAInput1 input = new OPAInput1();
-        input.setMethods(methods);
-        input.setRoles(roles);
-        input.setResources(uris);
-        BulkOPARequest1 opaRequest = new BulkOPARequest1(input);
-
-        HttpClient httpClient = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_1_1)
-                .connectTimeout(Duration.ofSeconds(10))
-                .build();
-        BulkOPAResponse response;
-        try {
-            String inputJson = objectMapper.writeValueAsString(opaRequest);
-
-      //      LOGGER.info("OPADecisionMaker BulkInputJSON created .....{}", inputJson);
-
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .POST(HttpRequest.BodyPublishers.ofString(inputJson))
-                    .uri(URI.create(finegrainedendpoint))
-                    .setHeader("User-Agent", "PRASHANNA")
-                    .build();
-
-            HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            response = objectMapper.readValue(httpResponse.body(), BulkOPAResponse.class);
-            allowedUris = response.getResult().getBatchAllow();
-     //       LOGGER.info("OPADecisionMaker Bulk Value of allow .....{}", allowedUris);
-        } catch (JsonProcessingException e) {
-            logger.error("OPADecisionMaker Exception while processing Json  .....{}", e.toString());
-        } catch (IOException e) {
-            logger.error("OPADecisionMaker Exception while IO operations  .....{}", e.toString());
-        } catch (InterruptedException e) {
-            logger.error("OPADecisionMaker InterruptedException operations  .....{}", e.toString());
-        } finally {
-            return allowedUris;
-        }
-    }
-
-    public static boolean isAllowedWASM(String uri, String method, List<String> roles) throws IOException {
+    public boolean isAllowedWASM(String uri, String method, List<String> roles) throws IOException {
         Boolean opaDecision = false;
         ObjectMapper objectMapper = new ObjectMapper();
         WASMSingleInput input = new WASMSingleInput(method, uri, roles);
@@ -190,7 +226,7 @@ public class OPADecisionMaker {
         return opaDecision;
     }
 
-    public static List<String> isAllowedWASM(List<String> uris, List<String> methods, List<String> roles) throws IOException {
+    public List<String> isAllowedWASM(List<String> uris, List<String> methods, List<String> roles) throws IOException {
         List<String> allowedURIS = Collections.EMPTY_LIST;
         ObjectMapper objectMapper = new ObjectMapper();
         WASMBulkInput input = new WASMBulkInput(methods, uris, roles);
