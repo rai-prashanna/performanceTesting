@@ -11,64 +11,52 @@ import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-        "method",
+        "methods",
         "resources",
         "roles"
 })
 @Generated("jsonschema2pojo")
-public class BulkOPAInput implements Serializable {
+public class BulkOPAInput implements Serializable
+{
 
-    @JsonProperty("method")
-    private String method;
+    @JsonProperty("methods")
+    private List<String> methods = new ArrayList<String>();
     @JsonProperty("resources")
     private List<String> resources = new ArrayList<String>();
     @JsonProperty("roles")
     private List<String> roles = new ArrayList<String>();
     @JsonIgnore
     private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
-    private final static long serialVersionUID = -7042078676187618513L;
+    private final static long serialVersionUID = 6631592005066668154L;
 
     /**
      * No args constructor for use in serialization
+     *
      */
     public BulkOPAInput() {
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        BulkOPAInput that = (BulkOPAInput) o;
-
-        if (!method.equals(that.method)) return false;
-        if (!resources.equals(that.resources)) return false;
-        if (!roles.equals(that.roles)) return false;
-        if (!additionalProperties.equals(that.additionalProperties)) return false;
-
-        return true;
-    }
-
     /**
-     * @param method
+     *
+     * @param methods
      * @param roles
      * @param resources
      */
-    public BulkOPAInput(String method, List<String> resources, List<String> roles) {
+    public BulkOPAInput(List<String> methods, List<String> resources, List<String> roles) {
         super();
-        this.method = method;
+        this.methods = methods;
         this.resources = resources;
         this.roles = roles;
     }
 
-    @JsonProperty("method")
-    public String getMethod() {
-        return method;
+    @JsonProperty("methods")
+    public List<String> getMethods() {
+        return methods;
     }
 
-    @JsonProperty("method")
-    public void setMethod(String method) {
-        this.method = method;
+    @JsonProperty("methods")
+    public void setMethods(List<String> methods) {
+        this.methods = methods;
     }
 
     @JsonProperty("resources")
@@ -103,24 +91,52 @@ public class BulkOPAInput implements Serializable {
 
     @Override
     public String toString() {
-        return "BulkOPAInput{" +
-                "method='" + method + '\'' +
-                ", resources=" + resources +
-                ", roles=" + roles +
-                ", additionalProperties=" + additionalProperties +
-                '}';
+        StringBuilder sb = new StringBuilder();
+        sb.append(BulkOPAInput.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
+        sb.append("methods");
+        sb.append('=');
+        sb.append(((this.methods == null)?"<null>":this.methods));
+        sb.append(',');
+        sb.append("resources");
+        sb.append('=');
+        sb.append(((this.resources == null)?"<null>":this.resources));
+        sb.append(',');
+        sb.append("roles");
+        sb.append('=');
+        sb.append(((this.roles == null)?"<null>":this.roles));
+        sb.append(',');
+        sb.append("additionalProperties");
+        sb.append('=');
+        sb.append(((this.additionalProperties == null)?"<null>":this.additionalProperties));
+        sb.append(',');
+        if (sb.charAt((sb.length()- 1)) == ',') {
+            sb.setCharAt((sb.length()- 1), ']');
+        } else {
+            sb.append(']');
+        }
+        return sb.toString();
     }
 
     @Override
     public int hashCode() {
         int result = 1;
-        result = ((result * 31) + ((this.resources == null) ? 0 : this.resources.hashCode()));
-        result = ((result * 31) + ((this.additionalProperties == null) ? 0 : this.additionalProperties.hashCode()));
-        result = ((result * 31) + ((this.method == null) ? 0 : this.method.hashCode()));
-        result = ((result * 31) + ((this.roles == null) ? 0 : this.roles.hashCode()));
+        result = ((result* 31)+((this.resources == null)? 0 :this.resources.hashCode()));
+        result = ((result* 31)+((this.additionalProperties == null)? 0 :this.additionalProperties.hashCode()));
+        result = ((result* 31)+((this.methods == null)? 0 :this.methods.hashCode()));
+        result = ((result* 31)+((this.roles == null)? 0 :this.roles.hashCode()));
         return result;
     }
 
+    @Override
+    public boolean equals(Object other) {
+        if (other == this) {
+            return true;
+        }
+        if ((other instanceof BulkOPAInput) == false) {
+            return false;
+        }
+        BulkOPAInput rhs = ((BulkOPAInput) other);
+        return (((((this.resources == rhs.resources)||((this.resources!= null)&&this.resources.equals(rhs.resources)))&&((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties))))&&((this.methods == rhs.methods)||((this.methods!= null)&&this.methods.equals(rhs.methods))))&&((this.roles == rhs.roles)||((this.roles!= null)&&this.roles.equals(rhs.roles))));
+    }
 
 }
-

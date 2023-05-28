@@ -15,34 +15,6 @@ import java.util.Map;
 public class BulkOPARequest implements Serializable
 {
 
-    @Override
-    public String toString() {
-        return "BulkOPARequest{" +
-                "input=" + input +
-                ", additionalProperties=" + additionalProperties +
-                '}';
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        BulkOPARequest that = (BulkOPARequest) o;
-
-        if (!input.equals(that.input)) return false;
-        if (!additionalProperties.equals(that.additionalProperties)) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = input.hashCode();
-        result = 31 * result + additionalProperties.hashCode();
-        return result;
-    }
-
     @JsonProperty("input")
     private BulkOPAInput input;
     @JsonIgnore
@@ -85,6 +57,44 @@ public class BulkOPARequest implements Serializable
         this.additionalProperties.put(name, value);
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(BulkOPARequest.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
+        sb.append("input");
+        sb.append('=');
+        sb.append(((this.input == null)?"<null>":this.input));
+        sb.append(',');
+        sb.append("additionalProperties");
+        sb.append('=');
+        sb.append(((this.additionalProperties == null)?"<null>":this.additionalProperties));
+        sb.append(',');
+        if (sb.charAt((sb.length()- 1)) == ',') {
+            sb.setCharAt((sb.length()- 1), ']');
+        } else {
+            sb.append(']');
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 1;
+        result = ((result* 31)+((this.input == null)? 0 :this.input.hashCode()));
+        result = ((result* 31)+((this.additionalProperties == null)? 0 :this.additionalProperties.hashCode()));
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == this) {
+            return true;
+        }
+        if ((other instanceof BulkOPARequest) == false) {
+            return false;
+        }
+        BulkOPARequest rhs = ((BulkOPARequest) other);
+        return (((this.input == rhs.input)||((this.input!= null)&&this.input.equals(rhs.input)))&&((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties))));
+    }
 
 }
-

@@ -4,7 +4,6 @@ import by.borge.jarl.Jarl;
 import by.borge.jarl.Plan;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.prai.authorization.PermissionHandler;
 import io.github.sangkeon.opa.wasm.Bundle;
 import io.github.sangkeon.opa.wasm.BundleUtil;
 import io.github.sangkeon.opa.wasm.OPAModule;
@@ -46,8 +45,8 @@ public class OPADecisionMaker {
     private ObjectMapper objectMapper;
 
     private SingleOPAInput singleInput;
-    private OPAInput1 bulkInput;
-    private BulkOPARequest1 bulkOPARequest;
+    private BulkOPAInput bulkInput;
+    private BulkOPARequest bulkOPARequest;
     private SingleOPARequest singleOPARequest;
 
     public OPADecisionMaker(){
@@ -110,8 +109,8 @@ public class OPADecisionMaker {
                 .build();
         objectMapper = new ObjectMapper();
         singleInput = new SingleOPAInput();
-        bulkInput= new OPAInput1();
-        bulkOPARequest= new BulkOPARequest1();
+        bulkInput= new BulkOPAInput();
+        bulkOPARequest= new BulkOPARequest();
         singleOPARequest= new SingleOPARequest();
     }
     public List<String> isAllowedOPA(List<String> uris, List<String> methods, List<String> roles) {
@@ -123,9 +122,6 @@ public class OPADecisionMaker {
         BulkOPAResponse response;
         try {
             String inputJson = objectMapper.writeValueAsString(bulkOPARequest);
-
-            //      LOGGER.info("OPADecisionMaker BulkInputJSON created .....{}", inputJson);
-
             HttpRequest httpRequest = HttpRequest.newBuilder()
                     .POST(HttpRequest.BodyPublishers.ofString(inputJson))
                     .uri(URI.create(finegrainedendpoint))
@@ -135,7 +131,6 @@ public class OPADecisionMaker {
             HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
             response = objectMapper.readValue(httpResponse.body(), BulkOPAResponse.class);
             allowedUris = response.getResult().getBatchAllow();
-            //       LOGGER.info("OPADecisionMaker Bulk Value of allow .....{}", allowedUris);
         } catch (JsonProcessingException e) {
             logger.error("OPADecisionMaker Exception while processing Json  .....{}", e.toString());
         } catch (IOException e) {
@@ -155,7 +150,6 @@ public class OPADecisionMaker {
         SingleOPAResponse response;
         try {
             String inputJson = objectMapper.writeValueAsString(singleOPARequest);
-            //    LOGGER.info("OPADecisionMaker InputJSON created .....{}", inputJson);
             HttpRequest httpRequest = HttpRequest.newBuilder()
                     .POST(HttpRequest.BodyPublishers.ofString(inputJson))
                     .uri(URI.create(coarsegrainedendpoint))
@@ -164,9 +158,7 @@ public class OPADecisionMaker {
             HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
 
             response = objectMapper.readValue(httpResponse.body(), SingleOPAResponse.class);
-            //      LOGGER.info("OPADecisionMaker httpResponse Body....{}", httpResponse.body());
             opaDecision = response.getResult().isAllow();
-            //       LOGGER.info("OPADecisionMaker Value of allow....{}", opaDecision);
         } catch (JsonProcessingException e) {
             logger.info("OPADecisionMaker JsonProcessingException ....{}", e.toString());
         } catch (IOException e) {
@@ -238,6 +230,4 @@ public class OPADecisionMaker {
         }
         return allowedURIS;
     }
-
-
 }
