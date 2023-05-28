@@ -1,6 +1,5 @@
 package com.prai;
 
-import com.prai.authorization.PermissionHandler;
 import com.prai.metrics.MyMetrics;
 import com.prai.metrics.SettingEnum;
 import com.prai.opa.*;
@@ -14,7 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import io.prometheus.client.exporter.HTTPServer;
 /**
- * Testing with Jarl library!
+ * Testing with Jarl, WASM binary, OPA REST library!
  */
 public class LocalApp {
     private static final Logger logger = LogManager.getLogger(LocalApp.class);
@@ -24,18 +23,21 @@ public class LocalApp {
         // ARGS[0] -> SETTINGS (like OPA,JARL, PermissionHandler)
         // ARGS[1] -> prometheusExporterPort
         // ARGS[1] -> loop
-//        int loops=Integer.valueOf(args[2]);
-//        int port=Integer.valueOf(args[1]);
-//        SettingEnum setting= SettingEnum.valueOf(args[0]);
+
+        SettingEnum setting= SettingEnum.valueOf(args[0]);
+        int port=Integer.valueOf(args[1]);
+        int loops=Integer.valueOf(args[2]);
+
         String uri = "Chassis";
         String method = "GET";
         List<String> roles = Arrays.asList("OmcSecurityAdministrator", "default-roles-omc", "DeleteJob", "OmcEquipmentAdministrator", "offline_access", "OmcEquipmentObserver", "OmcSystemAdministrator", "uma_authorization", "CreateJob", "OmcSystemObserver");
 
-
-        String uri1="/redfish/v1/Chassis";
-        Authz wasmAuthz= OPARestAuthz.getInstance();
+        Authz wasmAuthz= WASMAuthz.getInstance();
+        Authz opaRESTAuthz= OPARestAuthz.getInstance();
+        Authz jarlAuthz= JARLAuthz.getInstance();
         wasmAuthz.init();
-    boolean decision=wasmAuthz.isAllowed(uri,method,roles);
+        opaRESTAuthz.init();
+        jarlAuthz.init();
 
         List<String> nextroles = Arrays.asList("CreateJob",
                 "DeleteJob",
@@ -45,49 +47,32 @@ public class LocalApp {
                 "/TaskService/Tasks/3/",
                 "Chassis");
         List<String> methods = Arrays.asList("GET", "GET", "GET", "GET");
-        wasmAuthz.isAllowed(uris,methods,nextroles);
         System.out.println("******************************************");
+        prometheusServer = new HTTPServer(port);
+        for (int i = 0; i < loops; i++) {
+            if(setting==SettingEnum.JARL){
+                MyMetrics.startAuthzDecisionTimer(SettingEnum.JARL);
+                boolean jarlDecision=jarlAuthz.isAllowed(uri, method, roles);
+                jarlAuthz.isAllowed(uris, methods, nextroles);
+                MyMetrics.stopAuthzDecisionTimer(SettingEnum.JARL);
+            }
+            if(setting==SettingEnum.OPA){
+                MyMetrics.startAuthzDecisionTimer(SettingEnum.OPA);
+                boolean opaDecision=opaRESTAuthz.isAllowed(uri, method, roles);
+                opaRESTAuthz.isAllowed(uris, methods, nextroles);
+                MyMetrics.stopAuthzDecisionTimer(SettingEnum.OPA);
+            }
+            if(setting==SettingEnum.WASM){
+                MyMetrics.startAuthzDecisionTimer(SettingEnum.WASM);
+                boolean wasmdecision=wasmAuthz.isAllowed(uri, method, roles);
+                wasmAuthz.isAllowed(uris, methods, nextroles);
+                MyMetrics.stopAuthzDecisionTimer(SettingEnum.WASM);
+            }
+            logger.debug("Iteration : {}", i);
+        }
+        prometheusServer.close();
 
-//        OPADecisionMaker.getInstance().isAllowedOPA(uri,method,
-//                roles);
-//        OPADecisionMaker.getInstance().isAllowedJarl(uri,method,
-//                roles);
-//     OPADecisionMaker.getInstance().isAllowedJarl(uris,methods,
-//                nextroles);
-
-//        prometheusServer = new HTTPServer(port);
-//        for (int i = 0; i < loops; i++) {
-//            if(setting==SettingEnum.JARL){
-//                MyMetrics.startAuthzDecisionTimer(SettingEnum.JARL);
-//                boolean wasmdecision=OPADecisionMaker.getInstance().isAllowedJarl(uri, method, roles);
-//                MyMetrics.stopAuthzDecisionTimer(SettingEnum.JARL);
-//            }
-//            if(setting==SettingEnum.OPA){
-//                MyMetrics.startAuthzDecisionTimer(SettingEnum.OPA);
-//                boolean opadecision=OPADecisionMaker.getInstance().isAllowedOPA(uri, method, roles);
-//                MyMetrics.stopAuthzDecisionTimer(SettingEnum.OPA);
-//            }
-//            if(setting==SettingEnum.WASM){
-//                MyMetrics.startAuthzDecisionTimer(SettingEnum.WASM);
-//                boolean wasmdecision=OPADecisionMaker.getInstance().isAllowedWASM(uri, method, roles);
-//                MyMetrics.stopAuthzDecisionTimer(SettingEnum.WASM);
-//            }
-//            if(setting==SettingEnum.PH){
-//                MyMetrics.startAuthzDecisionTimer(SettingEnum.PH);
-//                boolean phdecision=PermissionHandler.getInstance().isAllowed(roles, method, uri1);
-//                MyMetrics.stopAuthzDecisionTimer(SettingEnum.PH);
-//            }
-//            logger.debug("Iteration : {}", i);
-//        }
-//        prometheusServer.close();
-
-//        String uri1="Chassis";
-//        String method1 = "GET";
-//        List<String> roles1=Arrays.asList("OmcEquipmentAdministrator");
-//        boolean localDecision= OPADecisionMaker.isAllowedWASM(uri1,method1,roles1);
-
-//        List<String> allowedUris = OPADecisionMaker.isAllowedWASM(uris, methods, nextroles);
-//        System.out.println("******************************************");
+        System.out.println("******************************************");
 
 //        System.out.println( "The value of decision from Jarl " );   ((JSONObject) ((JSONArray) test).get(0)).get("result")
 
