@@ -5,6 +5,7 @@ import by.borge.jarl.Plan;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -12,42 +13,41 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-public class JARLAuthz implements Authz{
+
+public class JARLAuthz implements FileBasedAuthz {
     private static final Logger logger = LogManager.getLogger(JARLAuthz.class);
     private Plan coarsedGraindePlan;
-    private static Plan fineGraindePlan;
-    private HashMap<String,?> data;
-    private static JARLAuthz instance=null;
+    private Plan fineGraindePlan;
+    private HashMap<String, ?> data;
+    private static JARLAuthz instance = null;
+    private String coarsedGrainedIRFilePath;
+    private String fineGrainedIRFilePath;
 
-    private JARLAuthz(){}
-    public static JARLAuthz getInstance(){
+    private JARLAuthz() {
+    }
+
+    public static JARLAuthz getInstance() {
         if (instance == null) {
             instance = new JARLAuthz();
         }
         return instance;
     }
 
-    public void initJARLMode(){
-        String coarsedGrainedIRFilePath = "/repo/policy/optimizedPlans/coarse-grained-policies-plan.json";
-        String fineGrainedIRFilePath = "/repo/policy/optimizedPlans/fine-grained-policies-plan.json";
+    public void initJARLMode() {
+
         var coarsedGrainedfile = new File(coarsedGrainedIRFilePath);
         try {
-            coarsedGraindePlan=  Jarl.builder(coarsedGrainedfile).build().getPlan(coarsedGrainedentrypoint);
+            coarsedGraindePlan = Jarl.builder(coarsedGrainedfile).build().getPlan(coarsedGrainedentrypoint);
         } catch (IOException e) {
             logger.info("OPADecisionMaker Exception while creating coarsedGraindePlan..... {}", e);
         }
         var fineGrainedfile = new File(fineGrainedIRFilePath);
         try {
-            fineGraindePlan= Jarl.builder(fineGrainedfile).build().getPlan(fineGrainedentrypoint);
+            fineGraindePlan = Jarl.builder(fineGrainedfile).build().getPlan(fineGrainedentrypoint);
         } catch (IOException e) {
             logger.info("OPADecisionMaker Exception while creating fineGraindePlan..... {}", e);
         }
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            data =mapper.readValue(new File("/repo/policy/unoptimizedPlans/data.json"),HashMap.class);
-        } catch (IOException e) {
-            logger.info("OPADecisionMaker Exception while reading data.json ..... {}", e);
-        }
+
     }
 
     @Override
@@ -86,6 +86,26 @@ public class JARLAuthz implements Authz{
 
     @Override
     public void init() {
-    initJARLMode();
+        initJARLMode();
     }
+
+    @Override
+    public void init(String file1, String file2) {
+        this.coarsedGrainedIRFilePath = file1;
+        this.fineGrainedIRFilePath = file2;
+        init();
+    }
+
+    @Override
+    public void init(String file1, String file2, String file3) {
+        init(file1,file2);
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            String path = file3;
+            data = mapper.readValue(new File(path), HashMap.class);
+        } catch (IOException e) {
+            logger.info("OPADecisionMaker Exception while reading data.json ..... {}", e);
+        }
+    }
+
 }

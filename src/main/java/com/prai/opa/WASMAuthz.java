@@ -7,6 +7,7 @@ import io.github.sangkeon.opa.wasm.BundleUtil;
 import io.github.sangkeon.opa.wasm.OPAModule;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -29,8 +30,8 @@ public class WASMAuthz implements Authz{
         return instance;
     }
     public void initWASMMode(){
-        String coarsedGrainedWASMPath = "/repo/policy/unoptimizedWASM/coarsed-bundle.tar.gz";
-        String fineGrainedWASMPath = "/repo/policy/unoptimizedWASM/finebundle.tar.gz";
+        String coarsedGrainedWASMPath = "/opt/ericsson/hds/resources/optimizedWASM/opti-coarsed-grained-bundle.tar.gz";
+        String fineGrainedWASMPath = "/opt/ericsson/hds/resources/optimizedWASM/opti-fine-grained-bundle.tar.gz";
         try {
             coarsedGrainedWASMBundle = BundleUtil.extractBundle(coarsedGrainedWASMPath);
         } catch (IOException e) {

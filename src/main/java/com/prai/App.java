@@ -18,7 +18,7 @@ public class App
 
     public static void main( String[] args )
     {
-        EMCClient.init(args[0]);
+        Client.init(args[0]);
         int loops= Integer.parseInt(args[3]);
         logger.debug("Web server for Prometheus client exporter started..");
         try {
@@ -29,7 +29,7 @@ public class App
   // ARGS[4] -> exporterPort
             //HTTPServer server = new HTTPServer("localhost",Integer.valueOf(args[4]));
             for (int i = 0; i < loops; i++) {
-                EMCClient.executeRequest("",args[1], SettingEnum.valueOf(args[2]));
+                Client.executeRequest("",args[1], SettingEnum.valueOf(args[2]));
             }
           //  server.close();
         } catch (NoSuchAlgorithmException e) {
