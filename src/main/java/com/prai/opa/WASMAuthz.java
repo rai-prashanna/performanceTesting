@@ -30,8 +30,8 @@ public class WASMAuthz implements Authz{
         return instance;
     }
     public void initWASMMode(){
-        String coarsedGrainedWASMPath = "/opt/ericsson/hds/resources/optimizedWASM/opti-coarsed-grained-bundle.tar.gz";
-        String fineGrainedWASMPath = "/opt/ericsson/hds/resources/optimizedWASM/opti-fine-grained-bundle.tar.gz";
+        String coarsedGrainedWASMPath = "pathToOptimizedWASM/opti-coarsed-grained-bundle.tar.gz";
+        String fineGrainedWASMPath = "pathToOptimizedWASM/opti-fine-grained-bundle.tar.gz";
         try {
             coarsedGrainedWASMBundle = BundleUtil.extractBundle(coarsedGrainedWASMPath);
         } catch (IOException e) {
