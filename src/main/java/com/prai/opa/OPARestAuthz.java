@@ -22,10 +22,10 @@ public class OPARestAuthz implements Authz{
     private BulkOPARequest bulkOPARequest;
     private SingleOPARequest singleOPARequest;
 
-    private final String serverIP = "testserver";
-    private final String serverPort = "32323";
-    private final String coarsegrainedendpoint = "http://" + serverIP + ":" + serverPort + "/v1/data/authz/redfish/v1/policy";
-    private final String finegrainedendpoint = "http://" + serverIP + ":" + serverPort + "/v1/data/authz/redfish/v1/fine/policy";
+    private final String serverIP = "localhost";
+    private final String serverPort = "8181";
+    private final String coarsegrainedendpoint = "http://" + serverIP + ":" + serverPort + "/v1/data/authz/policy";
+    private final String finegrainedendpoint = "http://" + serverIP + ":" + serverPort + "/v1/data/authz/fine/policy";
     private static final Logger logger = LogManager.getLogger(OPARestAuthz.class);
     private static OPARestAuthz instance=null;
 
